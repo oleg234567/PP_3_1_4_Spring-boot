@@ -41,8 +41,8 @@ public class AdminController {
         User authenticatedUser = userService.findByUsername(principal.getName());
         model.addAttribute("authenticatedUser", authenticatedUser);
         model.addAttribute("rolesAuthenticatedUser", authenticatedUser.getRoles());
-        model.addAttribute("users", userService.findAll());
-        List<Role> roles = roleService.findAll();
+        model.addAttribute("users", userService.findAllUsers());
+        List<Role> roles = roleService.findAllRole();
         model.addAttribute("allRoles", roles);
         return "/admin";
     }
