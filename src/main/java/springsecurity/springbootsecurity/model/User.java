@@ -34,23 +34,15 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(name = "age")
-    @NotNull(message = "Возраст не должен быть пустым")
-    @Min(value = 0, message = "Возраст не может быть меньше 0")
-    @Max(value = 100, message = "Возраст не может быть больше 100")
     private Byte age;
 
     @Column(name = "e_mail")
-    @NotBlank(message = "Почта не может быть пустой!")
-    @Size(min = 2, max = 50, message = "Длина больше 2 символов, но меньше 50")
     private String email;
 
     @Column(name = "first_name", unique = true)
-    @NotBlank(message = "Поле не может быть пустым")
-    @Size(min = 2, max = 50, message = "Длина больше 2 символов, но меньше 50")
     private String firstName;
 
     @Column(name = "password")
-    @NotBlank(message = "Поле не может быть пустым")
     private String password;
 
 
