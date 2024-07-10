@@ -24,7 +24,9 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public List<User> findAllUsers() { return userRepository.findAllUniqueUsers(); }
+    public List<User> findAllUsers() {
+        return userRepository.findAllUniqueUsers();
+    }
 
     @Override
     @Transactional
@@ -52,20 +54,29 @@ public class UserServiceImp implements UserService {
     @Transactional
     @Override
     public void updateUser(User updateUser, Long id) {
-        updateUser.setId(id);
-        if (!updateUser.getPassword().equals(userRepository.findById(id).get().getPassword())) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        if (!updateUser.getPassword().equals(user.getPassword())) {
             updateUser.setPassword(passwordEncoder.encode(updateUser.getPassword()));
         }
         userRepository.save(updateUser);
     }
 
+
     @Override
     @Transactional
-    public UserDetails loadUserByUsername (String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException(String.format("User '%s' не найден", email));
+            throw new UsernameNotFoundException("User not found with email: " + email);
         }
-        return user;
+        return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                .password(user.getPassword())
+                .authorities(user.getRoles())
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(false)
+                .build();
     }
 }
