@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import springsecurity.springbootsecurity.model.User;
 import springsecurity.springbootsecurity.repository.UsersRepository;
+
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class UserServiceImp implements UserService {
     @Override
     @Transactional
     public boolean deleteUser(Long id) {
-        if(userRepository.findById(id).isPresent()) {
+        if (userRepository.findById(id).isPresent()) {
             userRepository.deleteById(id);
             return true;
         }
@@ -53,11 +54,11 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public void updateUser(User updateUser, Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+    public void updateUser(User updateUser) {
+        User user = userRepository.findById(updateUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + updateUser.getId()));
         if (!updateUser.getPassword().equals(user.getPassword())) {
-            updateUser.setPassword(passwordEncoder.encode(updateUser.getPassword()));
+            user.setPassword(passwordEncoder.encode(updateUser.getPassword()));
         }
         userRepository.save(updateUser);
     }
@@ -65,18 +66,24 @@ public class UserServiceImp implements UserService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with email: " + email);
+    public UserDetails loadUserByUsername(String email) {
+        try {
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                throw new UsernameNotFoundException("User not found with email: " + email);
+            }
+            return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                    .password(user.getPassword())
+                    .authorities(user.getRoles())
+                    .accountExpired(false)
+                    .accountLocked(false)
+                    .credentialsExpired(false)
+                    .disabled(false)
+                    .build();
+        } catch (UsernameNotFoundException e) {
+            System.out.println(e.getMessage());
+            return null;
         }
-        return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities(user.getRoles())
-                .accountExpired(false)
-                .accountLocked(false)
-                .credentialsExpired(false)
-                .disabled(false)
-                .build();
     }
+
 }
